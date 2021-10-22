@@ -1,9 +1,9 @@
 const db = require("../data/db-config");
 
-module.exports = {
-  getRecipeById,
+const getRecipeById = async (recipe_id) => {
+  return db("recipes").where("recipe_id", recipe_id);
 };
 
-const getRecipeById = (recipe_id) => {
-  return db("recipes").where("recipe_id", recipe_id);
+module.exports = {
+  getRecipeById,
 };

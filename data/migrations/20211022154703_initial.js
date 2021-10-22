@@ -4,14 +4,22 @@ exports.up = function (knex) {
       tbl.increments("recipe_id");
       tbl.string("recipe_name", 128).notNullable().unique();
     })
-    .createTable("steps", (tbl) => {
-      tbl.increments("step_id");
-      tbl.string("instructions", 1028).notNullable();
-      tbl.integer("step_order").notNullable();
-    })
     .createTable("ingredients", (tbl) => {
       tbl.increments("ingredient_id");
       tbl.string("ingredient_name", 256).notNullable().unique();
+    })
+    .createTable("steps", (tbl) => {
+      tbl.increments("step_id");
+      tbl.string("instruction", 1028).notNullable();
+      tbl.integer("step_number").notNullable();
+      tbl
+        .integer("recipe_id")
+        .unsigned()
+        .notNullable()
+        .references("recipe_id")
+        .inTable("recipes")
+        .onDelete("CASCADE")
+        .onUpdate("CASCADE");
     })
     .createTable("recipe_steps_ingredients", (tbl) => {
       tbl.increments("recipe_step_ingredient_id");

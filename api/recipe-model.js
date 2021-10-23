@@ -5,11 +5,16 @@ const getRecipes = async () => {
 };
 
 const getRecipeById = async (recipe_id) => {
-  //   const recipeRows = await db("steps as s")
-  //     .join("recipes as r", "r.recipe_id", "s.recipe_id")
-  //     .select("r.recipe_name", "s.step_id", "s.step_number", "s.instruction")
-  //     .where("r.recipe_id", recipe_id);
-
+  //Raw SQL - Steps:
+  // select s.step_id, s.step_number, s.instruction, r.recipe_name
+  // from steps as s
+  // left join steps_ingredients as si
+  // on s.step_id = si.step_id
+  // join recipes as r
+  // on s.recipe_id = r.recipe_id
+  // where s.recipe_id = 1
+  // group by s.step_number
+  // order by s.step_number
   const stepsRows = await db("steps as s")
     .leftJoin("steps_ingredients as si", "s.step_id", "si.step_id")
     .join("recipes as r", "s.recipe_id", "r.recipe_id")
@@ -18,20 +23,42 @@ const getRecipeById = async (recipe_id) => {
     .groupBy("s.step_number")
     .orderBy("s.step_number");
 
+  //Raw SQL - Ingredients:
+  // select s.step_id, i.ingredient_id, i.ingredient_name, si.ingredient_quantity
+  // from steps as s
+  // join steps_ingredients as si on si.step_id = s.step_id
+  // join ingredients as i on i.ingredient_id = si.ingredient_id
+  // where s.recipe_id = 1
+  const ingredientsRows = await db("steps as s")
+    .join("steps_ingredients as si", "si.step_id", "s.step_id")
+    .join("ingredients as i", "i.ingredient_id", "si.ingredient_id")
+    .select(
+      "s.step_id",
+      "i.ingredient_id",
+      "i.ingredient_name",
+      "si.ingredient_quantity"
+    )
+    .where("s.recipe_id", recipe_id)
+    .orderBy("s.step_number");
+
   const stepsArray = stepsRows.map((step) => {
     return {
       step_id: step.step_id,
       step_number: step.step_number,
       step_instructions: step.instruction,
-      ingredients: [],
+      ingredients: ingredientsRows.map((ingredient) => {
+        if (ingredient.step_id == step.step_id) {
+          return {
+            ingredient_id: ingredient.ingredient_name,
+            ingredient_name: ingredient.ingredient_name,
+            quantity: ingredient.ingredient_quantity,
+          };
+        } else {
+          return;
+        }
+      }),
     };
   });
-
-  //   const ingredientsArray = stepsRows.map(row => {
-  //       if (row.ingredient_id) {
-  //           return
-  //       }
-  //   })
 
   const recipeReturn = {
     recipe_id: recipe_id,
@@ -46,22 +73,3 @@ module.exports = {
   getRecipeById,
   getRecipes,
 };
-
-//RAW SQL
-//RECIPES:
-// select r.recipe_name, s.step_id, s.step_number, s.instruction
-// from steps as s
-// join recipes as r on r.recipe_id = s.recipe_id
-// where r.recipe_id = 2
-// order by s.step_number;
-
-//STEPS
-// select s.step_id, s.step_number, s.instruction, r.recipe_name
-// from steps as s
-// left join steps_ingredients as si
-// on s.step_id = si.step_id
-// join recipes as r
-// on s.recipe_id = r.recipe_id
-// where s.recipe_id = 1
-// group by s.step_number
-// order by s.step_number

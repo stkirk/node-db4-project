@@ -21,16 +21,8 @@ exports.up = function (knex) {
         .onDelete("CASCADE")
         .onUpdate("CASCADE");
     })
-    .createTable("recipe_steps_ingredients", (tbl) => {
-      tbl.increments("recipe_step_ingredient_id");
-      tbl
-        .integer("recipe_id")
-        .unsigned()
-        .notNullable()
-        .references("recipe_id")
-        .inTable("recipes")
-        .onDelete("CASCADE")
-        .onUpdate("CASCADE");
+    .createTable("steps_ingredients", (tbl) => {
+      tbl.increments("step_ingredient_id");
       tbl
         .integer("step_id")
         .unsigned()
@@ -42,17 +34,18 @@ exports.up = function (knex) {
       tbl
         .integer("ingredient_id")
         .unsigned()
+        .notNullable()
         .references("ingredient_id")
         .inTable("ingredients")
         .onDelete("CASCADE")
         .onUpdate("CASCADE");
-      tbl.string("ingredient_quantity", 64);
+      tbl.string("ingredient_quantity", 64).notNullable();
     });
 };
 
 exports.down = function (knex) {
   return knex.schema
-    .dropTableIfExists("recipe_steps_ingredients")
+    .dropTableIfExists("steps_ingredients")
     .dropTableIfExists("ingredients")
     .dropTableIfExists("steps")
     .dropTableIfExists("recipes");
